@@ -25,6 +25,12 @@ app.config['SENTRY_CONFIG'] = {
 }
 
 
+from bloodheroes.resources.user import UserAPI, UserListAPI
+
+api.add_resource(UserListAPI, '/user')
+api.add_resource(UserAPI, '/user/<int:user_id>')
+
+
 @app.errorhandler(BaseExceptions)
 def handler_senseauth_exception(error):
     session_id = request.headers.get('X-SESSION-ID', None)
