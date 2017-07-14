@@ -26,10 +26,10 @@ def required_auth(f):
         else:
             do_auth.validate_token(app_token)
         ctx = stack.top
-        ctx.login_user = session.user.view()
+        ctx.login_user = session
         if not hasattr(g, '_session'):
             g._session = []
-        g._session = session.__dict__
+        g._session = session
         return f(*args, **kwargs)
     return decorated
 

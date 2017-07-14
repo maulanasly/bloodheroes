@@ -84,3 +84,15 @@ class UserList(object):
     }
 
     required = ['users']
+
+
+@swagger.model
+class RequestDonations(object):
+    """docstring for User"""
+
+    resource_fields = {
+        'blood_type': fields.String(),
+        'notes': fields.String(),
+    }
+
+    required = ['blood_type', 'notes']

@@ -165,6 +165,13 @@ class FileNotFound(BaseExceptions):
     extra_fields = []
 
 
+class BloodNotFound(BaseExceptions):
+    message = "Blood not found"
+    code = 167
+    status_code = 404
+    extra_fields = []
+
+
 class EmailConflict(BaseExceptions):
     message = "Email address has taken"
     code = 190
