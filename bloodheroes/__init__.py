@@ -27,12 +27,14 @@ app.config['SENTRY_CONFIG'] = {
 
 from bloodheroes.resources.users import UserAPI, UserListAPI
 from bloodheroes.resources.authentications import AuthAPI, SignOutAPI
+from bloodheroes.resources.donations import RequestDonationListAPI
 
 
 api.add_resource(AuthAPI, '/login')
 api.add_resource(SignOutAPI, '/SignOutAPI')
 api.add_resource(UserListAPI, '/user')
 api.add_resource(UserAPI, '/user/<int:user_id>')
+api.add_resource(RequestDonationListAPI, '/donations')
 
 
 @app.errorhandler(BaseExceptions)

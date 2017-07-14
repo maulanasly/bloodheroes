@@ -17,20 +17,20 @@ class Authentication(object):
 
     def do_login(self, user, password):
         with hash_semaphore:
-            if not bcrypt.hashpw(password, str(user.bcrypt_password)) == user.bcrypt_password:
+            if not bcrypt.hashpw(password, str(user['bycrypt_password'])) == user['bycrypt_password']:
                 raise IncorrectPassword
             else:
-                hashed_username = md5.new(user.email.lower()).hexdigest() + str(user.user_id)
+                hashed_username = md5.new(user['email'].lower()).hexdigest() + str(user['user_id'])
                 session_id = self.get_session_from_cache(hashed_username)
                 if session_id is None:
                     session = mongo.db.sessions.find_one({'user_id': user['user_id']})
                     if session is None:
-                        session = self.generate_session(user['user_id'])
+                        session_id = self.generate_session(user['user_id'])
                     session_id = session['session_id']
                     redis.hset('user_sessions', hashed_username, session_id)
         return session_id
 
-    def generate_session(user_id):
+    def generate_session(self, user_id):
         session_id = hmac.new(current_app.config.get('APP_SECRET'), datetime.now().strftime('%Y-%m-%d %H:%m:%s'))
         session_id = session_id.digest().encode("hex")
         prepared_data = {
@@ -47,7 +47,7 @@ class Authentication(object):
         return session
 
     def validate_token(self, token):
-        token = mongo.db.applications.find_one({'token': token})
+        token = mongo.db.tokens.find_one({'token': token})
         if token is None:
             raise InvalidTokenType
         return token
