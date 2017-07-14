@@ -1,10 +1,8 @@
 from werkzeug.local import LocalProxy
 from functools import wraps
-from flask import request, g, current_app
+from flask import request, g
 from bloodheroes.models.authentications import Authentication
-from bloodheroes import mongo
-from bloodheroes.exceptions import MissingSessionID, MissingAppToken, \
-    AccessUserPermissionDenied
+from bloodheroes.exceptions import MissingSessionID, MissingAppToken
 
 
 try:
