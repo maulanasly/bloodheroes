@@ -1,13 +1,13 @@
 from flask import g
 from flask_restful import Resource, reqparse, marshal_with
 from flask_restful_swagger import swagger
-from mallsini.schemes import Auth, UserAuth
-from mallsini import mongo
-from mallsini.exceptions import UnAuthorized, InvalidFileType, SessionExpired, \
+from bloodheroes.schemes import Auth, UserAuth
+from bloodheroes import mongo
+from bloodheroes.exceptions import UnAuthorized, InvalidFileType, SessionExpired, \
     UserNotFound, IncorrectPassword, InvalidEmailFormat
-from mallsini.models.authentications import Authentication
-from mallsini.helpers.decorators import required_token, required_auth
-from mallsini.helpers.utilities import email_validator
+from bloodheroes.models.authentications import Authentication
+from bloodheroes.helpers.decorators import required_token, required_auth
+from bloodheroes.helpers.utilities import email_validator
 
 
 import md5
@@ -57,17 +57,14 @@ class AuthAPI(Resource):
     def post(self):
         "authenticate user"
         args = auth_parser.parse_args()
-        username = args['username']
         email = args['email']
         password = args['password']
-        if email is None and username is None:
+        if email is None:
             raise InvalidFileType
-        if username is None:
-            if not email_validator(email):
-                raise InvalidEmailFormat(email=email, expected='<xxxxxx>@<xxxxx>.<xxx>')
-            user = mongo.db.users.find_one({'email': email})
-        else:
-            user = mongo.db.users.find_one({'username': username})
+        if not email_validator(email):
+            raise InvalidEmailFormat(email=email, expected='<xxxxxx>@<xxxxx>.<xxx>')
+
+        user = mongo.db.users.find_one({'email': email})
         if user is not None:
             login = Authentication()
             try:

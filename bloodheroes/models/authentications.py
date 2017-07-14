@@ -1,7 +1,7 @@
 from flask import current_app
-from mallsini import redis
-from mallsini import mongo
-from mallsini.exceptions import UnAuthorized, IncorrectPassword, InvalidTokenType
+from bloodheroes import redis
+from bloodheroes import mongo
+from bloodheroes.exceptions import UnAuthorized, IncorrectPassword, InvalidTokenType
 
 from datetime import datetime
 import md5
