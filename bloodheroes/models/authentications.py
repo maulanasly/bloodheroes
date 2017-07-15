@@ -17,16 +17,17 @@ class Authentication(object):
 
     def do_login(self, user, password):
         with hash_semaphore:
-            if not bcrypt.hashpw(password, str(user['bycrypt_password'])) == user['bycrypt_password']:
+            if not bcrypt.hashpw(password, str(user['bcrypt_password'])) == user['bcrypt_password']:
                 raise IncorrectPassword
             else:
                 hashed_username = md5.new(user['email'].lower()).hexdigest() + str(user['user_id'])
                 session_id = self.get_session_from_cache(hashed_username)
                 if session_id is None:
                     session = mongo.db.sessions.find_one({'user_id': user['user_id']})
-                    if session is None:
+                    if session:
+                        session_id = session['session_id']
+                    else:
                         session_id = self.generate_session(user['user_id'])
-                    session_id = session['session_id']
                     redis.hset('user_sessions', hashed_username, session_id)
         return session_id
 

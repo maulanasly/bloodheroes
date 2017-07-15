@@ -113,7 +113,7 @@ class UserNotFound(BaseExceptions):
     message = "User not found"
     code = 160
     status_code = 404
-    extra_fields = ['message']
+    extra_fields = ['user_id']
 
 
 class CategoryNotFound(BaseExceptions):

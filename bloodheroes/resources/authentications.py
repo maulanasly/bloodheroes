@@ -61,8 +61,8 @@ class AuthAPI(Resource):
         password = args['password']
         if email is None:
             raise InvalidFileType
-        # if not email_validator(email):
-        #     raise InvalidEmailFormat(email=email, expected='<xxxxxx>@<xxxxx>.<xxx>')
+        if not email_validator(email):
+            raise InvalidEmailFormat(email=email, expected='<xxxxxx>@<xxxxx>.<xxx>')
 
         user = mongo.db.users.find_one({'email': email})
         if user is not None:
@@ -124,5 +124,5 @@ class SignOutAPI(Resource):
             raise SessionExpired
         logout = Authentication()
         logout.delete_session_in_cache(user['email'], session['user_id'])
-        session.delete()
+        mongo.db.sessions.remove({'session_id': session_id})
         return 'no content', 204

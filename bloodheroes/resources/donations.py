@@ -73,6 +73,7 @@ class RequestDonationListAPI(Resource):
     )
     @marshal_with(RequestDonations.resource_fields)
     def post(self):
+        "request donations"
         user_id = current_user['user_id']
         args = req_donations_parser.parse_args()
         blood_type = args['blood_type']

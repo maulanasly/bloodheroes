@@ -1,6 +1,7 @@
 from flask import current_app
 from datetime import datetime
 import calendar
+import bcrypt
 import re
 
 LATIDTUDE = '^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$'
@@ -8,7 +9,7 @@ LONGITUDE = '^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:
 
 
 def email_validator(email):
-    return re.search(r'^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$', email)
+    return re.search(r'^.+@[?[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$', email)
 
 
 def latitude_validator(latitude):
@@ -30,3 +31,7 @@ def to_timestamp(date):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
+
+
+def encrypt_password(password):
+    return bcrypt.hashpw(str(password), bcrypt.gensalt(8))

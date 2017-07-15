@@ -40,18 +40,20 @@ class CrateUser(object):
         'user_id': fields.String(),
         'email': fields.String(),
         'password': fields.String(),
-        'phone_number': fields.String(),
-        'username': fields.String(),
+        'contact': fields.String(),
         'firstname': fields.String(),
         'lastname': fields.String(),
-        'profile_pict': fields.Raw(),
-        'created_at': fields.Integer(),
-        'application': fields.String(),
-        'user_role': fields.String(),
-        'additional_info': fields.Raw(),
+        'photo_url': fields.String(),
+        'register_date': fields.Integer(),
+        'longitude': fields.Float(),
+        'latitude': fields.Float(),
+        'gender': fields.String(),
+        'blood_type': fields.String(),
+        'level': fields.String(),
+        'status': fields.Integer()
     }
 
-    required = ['email', 'password']
+    required = ['email', 'password', 'firstname']
 
 
 @swagger.model
@@ -61,16 +63,20 @@ class User(object):
     resource_fields = {
         'user_id': fields.String(),
         'email': fields.String(),
-        'username': fields.String(),
+        'contact': fields.String(),
         'firstname': fields.String(),
         'lastname': fields.String(),
-        'phone_number': fields.String(),
-        'profile_pict': fields.Raw(),
-        'user_role': fields.String(),
-        'additional_info': fields.Raw(),
+        'photo_url': fields.String(),
+        'register_date': fields.Integer(),
+        'longitude': fields.Float(),
+        'latitude': fields.Float(),
+        'gender': fields.String(),
+        'blood_type': fields.String(),
+        'level': fields.String(),
+        'status': fields.Integer()
     }
 
-    required = ['email']
+    required = ['email', 'password']
 
 
 @swagger.model
@@ -80,7 +86,8 @@ class UserList(object):
     """docstring for ClassName"""
 
     resource_fields = {
-        "users": fields.List(fields.Nested(User.resource_fields))
+        "users": fields.List(fields.Nested(User.resource_fields)),
+        "count": fields.Integer()
     }
 
     required = ['users']
