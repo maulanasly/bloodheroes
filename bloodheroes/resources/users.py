@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse, marshal_with
 from flask_restful_swagger import swagger
 from bloodheroes import mongo
 from bloodheroes.schemes import User, CrateUser, UserList
-from bloodheroes.helpers.decorators import required_auth, current_user
+from bloodheroes.helpers.decorators import required_auth, current_user, required_token
 from bloodheroes.helpers.utilities import email_validator, encrypt_password, to_timestamp
 from bloodheroes.exceptions import FieldRequired, InvalidEmailFormat, EmailConflict,\
     UnIndetifiedAtribute, UserNotFound
@@ -246,7 +246,7 @@ class UserAPI(Resource):
 
 class UserListAPI(Resource):
     """docstring for UserAPI"""
-    decorators = [required_auth]
+    # decorators = [required_auth]
 
     @swagger.operation(
         notes="""Get list of user""",
@@ -342,6 +342,7 @@ class UserListAPI(Resource):
         ]
     )
     @marshal_with(UserList.resource_fields)
+    @required_auth
     def get(self):
         args = get_user_parser.parse_args()
         longitude = args['longitude']
@@ -385,14 +386,6 @@ class UserListAPI(Resource):
         notes="""Add new user""",
         parameters=[
             {
-                "name": "X-SESSION-ID",
-                "description": "",
-                "required": True,
-                "allowMultiple": False,
-                "dataType": "string",
-                "paramType": "header"
-            },
-            {
                 "name": "X-APP-TOKEN",
                 "description": "",
                 "required": True,
@@ -420,6 +413,7 @@ class UserListAPI(Resource):
         ]
     )
     @marshal_with(CrateUser.resource_fields)
+    @required_token
     def post(self):
         args = add_user_parser.parse_args()
         email = args['email']
@@ -448,8 +442,10 @@ class UserListAPI(Resource):
         if mongo.db.users.find_one({'email': email}):
             raise EmailConflict(email=email)
         blood = mongo.db.blood_types.find_one({'blood_name': blood_type})
-        if blood is None:
-            raise UnIndetifiedAtribute
+        blood_id = None
+        if blood_type is not None:
+            blood = mongo.db.blood_types.find_one({'blood_name': blood_type})
+            blood_id = None if blood is None else blood['blood_id']
         user_cursor = mongo.db.users.find({}).sort([('user_id', -1)]).limit(1)
         last_id = 0
         for user in user_cursor:
@@ -464,7 +460,7 @@ class UserListAPI(Resource):
             'fcm_token': fcm_token,
             'photo_url': photo_url,
             'gender': gender,
-            'blood_id': int(blood['blood_id']),
+            'blood_id': blood_id,
             'level_id': level_id,
             'status': status,
             'register_date': to_timestamp(datetime.now()),
