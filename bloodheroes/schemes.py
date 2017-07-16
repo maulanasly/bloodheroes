@@ -103,3 +103,14 @@ class RequestDonations(object):
     }
 
     required = ['blood_type', 'notes']
+
+@swagger.model
+class RequestBlood(object):
+    """docstring for User"""
+
+    resource_fields = {
+        'blood_name': fields.String(),
+        'resus': fields.Integer(),
+    }
+
+    required = ['blood_name', 'resus']
