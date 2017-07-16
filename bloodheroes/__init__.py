@@ -31,9 +31,9 @@ from bloodheroes.resources.donations import RequestDonationListAPI
 
 
 api.add_resource(AuthAPI, '/login')
-api.add_resource(SignOutAPI, '/SignOutAPI')
+api.add_resource(SignOutAPI, '/logout')
 api.add_resource(UserListAPI, '/user')
-api.add_resource(UserAPI, '/user/<int:user_id>')
+api.add_resource(UserAPI, '/user/<string:user_id>')
 api.add_resource(RequestDonationListAPI, '/donations')
 
 
