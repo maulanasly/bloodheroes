@@ -44,8 +44,6 @@ class BloodTypesAPI(Resource):
 
     @marshal_with(BloodTypes.resource_fields)
     def delete(self, blood_id=None):
-        if blood_id == 'self':
-            blood_id = current_user['blood_id']
         blood_type = mongo.db.users.find_one({'blood_id': blood_id})
         if blood_type is None:
             raise BloodNotFound
@@ -70,10 +68,10 @@ class BloodTypesListAPI(Resource):
         blood_name = args['blood_name']
         rexus = args['rexus']
 
-        blood_types_cursor = mongo.db.blood_types.find({})
+        blood_types_cursor = mongo.db.blood_types.find_one({})
         last_id = 0
         for blood_type in blood_types_cursor:
-            last_id = int(blood_id['request_id'])
+            last_id = int(blood_type['blood_id'])
         prepared_data = {
             'blood_id': last_id + 1,
             'blood_name': blood_name,
