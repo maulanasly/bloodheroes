@@ -88,6 +88,7 @@ class UserAPI(Resource):
     )
     @marshal_with(CrateUser.resource_fields)
     def get(self, user_id=None):
+        'get user by id'
         if user_id == 'self':
             user_id = current_user['user_id']
         user = mongo.db.users.find_one({'user_id': user_id})
@@ -138,6 +139,7 @@ class UserAPI(Resource):
     )
     @marshal_with(CrateUser.resource_fields)
     def put(self, user_id=None):
+        'update user'
         if user_id == 'self':
             user_id = current_user['user_id']
         user = mongo.db.users.find_one({'user_id': user_id})
@@ -235,6 +237,7 @@ class UserAPI(Resource):
     )
     @marshal_with(CrateUser.resource_fields)
     def delete(self, user_id=None):
+        'delete user'
         if user_id == 'self':
             user_id = current_user['user_id']
         user = mongo.db.users.find_one({'user_id': user_id})
@@ -344,6 +347,7 @@ class UserListAPI(Resource):
     @marshal_with(UserList.resource_fields)
     @required_auth
     def get(self):
+        'get list user'
         args = get_user_parser.parse_args()
         longitude = args['longitude']
         latitude = args['latitude']
@@ -417,6 +421,7 @@ class UserListAPI(Resource):
     @marshal_with(CrateUser.resource_fields)
     @required_token
     def post(self):
+        'register new user'
         args = add_user_parser.parse_args()
         email = args['email']
         firstname = args['firstname']

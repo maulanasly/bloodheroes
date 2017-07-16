@@ -98,8 +98,27 @@ class RequestDonations(object):
     """docstring for User"""
 
     resource_fields = {
+        'donation_id': fields.Integer(),
         'blood_type': fields.String(),
         'notes': fields.String(),
+        'request_date': fields.Integer(),
+        'requisite_number': fields.Integer(),
+        'user': fields.Raw(),
     }
 
-    required = ['blood_type', 'notes']
+    required = []
+
+
+@swagger.model
+@swagger.nested(
+    users=RequestDonations.__name__)
+class RequestDonationsList(object):
+    """docstring for ClassName"""
+
+    resource_fields = {
+        "donations": fields.List(fields.Nested(RequestDonations.resource_fields)),
+        "count": fields.Integer(),
+        "requisite_number": fields.Integer()
+    }
+
+    required = ['donations']
