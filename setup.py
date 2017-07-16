@@ -14,6 +14,7 @@ setup(
         'flask-restful-swagger',
         'flask-redis',
         'Flask-PyMongo',
+        'flask-FCM',
         'pymongo',
         'bcrypt'
     ],

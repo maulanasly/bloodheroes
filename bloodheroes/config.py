@@ -15,6 +15,7 @@ class BaseConfig(object):
     CLOUD_API_KEY = ""
     CLOUD_API_SECRET = ""
     CLOUD_API_NAME = ""
+    FCM_API_KEY = "AAAAuZhjt40:APA91bHe6Omx7xqs6ojyO2car-IhQ4i-3jTtvw4RmlY4gi05BkqBC2GjRhSKm0HgMugR92hmwHqVsdZyeEgZ4mHJQhpkDZk6o3pTwlsOkobQfG6JHncIzj8YGv1qcEuG82e1vVTDIohP"
 
 
 class DevelopmentConfig(BaseConfig):

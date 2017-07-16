@@ -1,4 +1,5 @@
 from flask import current_app
+from bloodheroes import fcm
 from datetime import datetime
 import calendar
 import bcrypt
@@ -35,3 +36,13 @@ def allowed_file(filename):
 
 def encrypt_password(password):
     return bcrypt.hashpw(str(password), bcrypt.gensalt(8))
+
+
+def send_notification(user, message):
+    if user['fcm_token'] is not '':
+        try:
+            fcm.notify_single_device(user['fcm_token'], data_message=message)
+        except Exception:
+            current_app.logger.exception("Failed to send notification")
+            return False
+    return True

@@ -3,6 +3,7 @@ from flask_restful import Api
 from flask_restful_swagger import swagger
 from flask_pymongo import PyMongo
 from flask_redis import FlaskRedis
+from flask_fcm import FCM
 from bloodheroes.exceptions import BaseExceptions, SessionExpired, MissingSessionID
 from bloodheroes.config import config
 
@@ -19,6 +20,7 @@ app.config.from_pyfile(config_file, silent=True)
 api = swagger.docs(Api(app), apiVersion='0.1', api_spec_url='/spec', description="bloodheroes-api")
 mongo = PyMongo(app)
 redis = FlaskRedis(app)
+fcm = FCM(app)
 
 
 app.config['SENTRY_CONFIG'] = {

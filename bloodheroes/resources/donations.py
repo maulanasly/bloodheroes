@@ -3,7 +3,7 @@ from flask_restful_swagger import swagger
 from bloodheroes import mongo
 from bloodheroes.schemes import RequestDonations, RequestDonationsList
 from bloodheroes.helpers.decorators import required_auth, current_user
-from bloodheroes.helpers.utilities import to_timestamp
+from bloodheroes.helpers.utilities import to_timestamp, send_notification
 from bloodheroes.exceptions import InvalidFileType, FieldRequired, RequisiteAlreadySatisfied
 
 from datetime import datetime
@@ -110,7 +110,12 @@ class RequestDonationAPI(Resource):
         if req_donation.count() <= int(donation['requisite_number']):
             raise RequisiteAlreadySatisfied(requisite_number=donation['requisite_number'])
         mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 1}})
-        # user = mongo.db.users.find_one({'user_id': donation['target_id']})
+        user = mongo.db.users.find_one({'user_id': donation['target_id']})
+        message = {
+            'action': 'accept_request',
+            'request_date': to_timestamp(datetime.now()),
+        }
+        send_notification(user, message)
         return 'no content', 204
 
     @swagger.operation(
@@ -149,7 +154,12 @@ class RequestDonationAPI(Resource):
         if donation is None:
             raise InvalidFileType
         mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 2}})
-        # user = mongo.db.users.find_one({'user_id': donation['target_id']})
+        user = mongo.db.users.find_one({'user_id': donation['target_id']})
+        message = {
+            'action': 'decline_request',
+            'request_date': to_timestamp(datetime.now()),
+        }
+        send_notification(user, message)
         return 'no content', 204
 
 
@@ -298,17 +308,26 @@ class RequestDonationListAPI(Resource):
         for user in users:
             if user_id != user['user_id']:
                 last_id = self.get_last_id()
+                request_date = to_timestamp(datetime.now())
                 prepared_data = {
                     'request_id': last_id + 1,
                     'user_id': user_id,
                     'target_id': user['user_id'],
                     'notes': notes,
                     'blood_id': blood_id,
-                    'request_date': to_timestamp(datetime.now()),
+                    'request_date': request_date,
                     'donation_date': None,
                     'status': 0,
                     'requisite_number': requisite_number
                 }
+                message = {
+                    'action': 'request_blood',
+                    'user_id': user_id,
+                    'request_date': request_date,
+                    'blood_type': blood_type,
+                    'notes': notes
+                }
+                send_notification(user, message)
                 mongo.db.donations.insert_one(prepared_data)
         return 'OK', 200
 
