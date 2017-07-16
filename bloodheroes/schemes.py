@@ -105,8 +105,8 @@ class RequestDonations(object):
     required = ['blood_type', 'notes']
 
 @swagger.model
-class RequestBlood(object):
-    """docstring for User"""
+class BloodTypes(object):
+    """docstring for BloodType"""
 
     resource_fields = {
         'blood_name': fields.String(),
@@ -114,3 +114,16 @@ class RequestBlood(object):
     }
 
     required = ['blood_name', 'resus']
+
+@swagger.model
+@swagger.nested(
+    blood_types=BloodType.__name__)
+class BloodTypeList(object):
+    """docstring for ClassName"""
+
+    resource_fields = {
+        "blood_types": fields.List(fields.Nested(BloodTypes.resource_fields)),
+        "count": fields.Integer()
+    }
+
+    required = ['blood_types']

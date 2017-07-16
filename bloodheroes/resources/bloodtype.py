@@ -4,7 +4,7 @@ from bloodheroes import mongo
 from bloodheroes.schemes import RequestBlood
 
 req_donations_parser = reqparse.RequestParser()
-req_donations_parser.add_argument('blood_name')
+req_donations_parser.add_argument('blood_name',type=str)
 req_donations_parser.add_argument('resus')
 
 class BloodTypeAPI(Resource):
@@ -18,7 +18,7 @@ class BloodTypeAPI(Resource):
         def put(self, blood_id=None):
             pass
 
-        @marshal_with(RequestBlood.resource_fields)
+        @marshal_with(BloodTypes.resource_fields)
         def delete(self, blood_id=None):
             if blood_id == 'self':
                 blood_id = current_user['blood_id']
@@ -31,7 +31,12 @@ class BloodTypeAPI(Resource):
 class BloodTypeListAPI(Resource):
     """docstring for BloodTypeListAPI"""
 
-        decorators = [required_auth]
+        #decorators = [required_auth]
+
+        @swagger.operation(
+
+        )
+
 
         def get(self, user_id=None):
             pass
