@@ -135,7 +135,7 @@ class UserLevels(object):
     resource_fields = {
         'level_name': fields.String(),
         'user_id': fields.Integer(),
-        'score':fields.Integet()
+        'score':fields.Integer()
     }
 
     required = ['level_name', 'user_id']
