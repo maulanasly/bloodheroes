@@ -117,7 +117,7 @@ class BloodTypes(object):
 
 @swagger.model
 @swagger.nested(
-    blood_types=BloodType.__name__)
+    blood_types=BloodTypes.__name__)
 class BloodTypeList(object):
     """docstring for ClassName"""
 
