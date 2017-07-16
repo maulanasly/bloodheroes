@@ -37,7 +37,7 @@ class CrateUser(object):
     """docstring for User"""
 
     resource_fields = {
-        'user_id': fields.String(),
+        'user_id': fields.Integer(),
         'email': fields.String(),
         'password': fields.String(),
         'contact': fields.String(),
@@ -49,7 +49,7 @@ class CrateUser(object):
         'latitude': fields.Float(),
         'gender': fields.String(),
         'blood_type': fields.String(),
-        'level': fields.String(),
+        'level': fields.Integer(),
         'status': fields.Integer()
     }
 
@@ -61,7 +61,7 @@ class User(object):
     """docstring for User"""
 
     resource_fields = {
-        'user_id': fields.String(),
+        'user_id': fields.Integer(),
         'email': fields.String(),
         'contact': fields.String(),
         'firstname': fields.String(),

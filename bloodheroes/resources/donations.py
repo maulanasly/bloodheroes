@@ -106,10 +106,10 @@ class RequestDonationAPI(Resource):
     def put(self, donation_id=None):
         "accept donation"
         donation = mongo.db.donations.find_one({'request_id': donation_id})
-        req_donation = mongo.db.donations.find({'user_id': donation['user_id']})
-        if req_donation.count() > int(donation['requisite_number']):
+        req_donation = mongo.db.donations.find({'user_id': donation['user_id']}, {'$or': [{'status': 1}, {'status': 3}]})
+        if req_donation.count() <= int(donation['requisite_number']):
             raise RequisiteAlreadySatisfied(requisite_number=donation['requisite_number'])
-        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 2}})
+        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 1}})
         # user = mongo.db.users.find_one({'user_id': donation['target_id']})
         return 'no content', 204
 
@@ -148,7 +148,7 @@ class RequestDonationAPI(Resource):
         donation = mongo.db.donations.find_one({'request_id': donation_id})
         if donation is None:
             raise InvalidFileType
-        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 3}})
+        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 2}})
         # user = mongo.db.users.find_one({'user_id': donation['target_id']})
         return 'no content', 204
 
@@ -323,6 +323,7 @@ class RequestDonationListAPI(Resource):
 
 class DonationAccomplishment(Resource):
     """docstring for Donationaccomplishment"""
+    decorators = [required_auth]
 
     @swagger.operation(
         notes="""Update donation / accomplishment donation request""",
@@ -356,16 +357,16 @@ class DonationAccomplishment(Resource):
     @marshal_with(RequestDonations.resource_fields)
     def put(self, donation_id=None):
         "finish donation"
-        donation = mongo.db.donations.find({'target_id': current_user['user_id'], 'status': 4})
+        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 3}})
+        donation = mongo.db.donations.find({'target_id': current_user['user_id'], 'status': 3})
         donation_count = 0
         if donation is None:
             donation_count = donation.count()
-        user_level = mongo.db.user_level.find({'score': {'$gt': donation_count}})
+        user_level = mongo.db.user_level.find({'score': {'$gt': donation_count}}).sort([('score', 1)]).limit(1)
         level_id = 1
         for level in user_level:
-            if donation_count >= level['score']:
-                level_id = level['level_id']
-        mongo.db.donations.update({'request_id': donation_id}, {'$set': {'status': 4}})
+            level_id = level['level_id']
+            break
         mongo.db.users.update({'user_id': current_user['user_id']}, {'$set': {'level_id': level_id}})
         # user = mongo.db.users.find_one({'user_id': donation['target_id']})
         return 'no content', 204

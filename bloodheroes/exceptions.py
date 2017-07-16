@@ -180,7 +180,7 @@ class EmailConflict(BaseExceptions):
 
 
 class RequisiteAlreadySatisfied(BaseExceptions):
-    message = "Email address has taken"
+    message = "Number of donation has already satisfied"
     code = 190
     status_code = 406
     extra_fields = ['requisite_number']
