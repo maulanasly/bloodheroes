@@ -423,7 +423,7 @@ class DonationHistory(Resource):
     )
     @marshal_with(RequestDonationsList.resource_fields)
     def get(self):
-        'hisory donation'
+        'history donation'
         args = get_donations_parser.parse_args()
         blood_type = args['blood_type']
         status = args['status']

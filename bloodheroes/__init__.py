@@ -20,6 +20,7 @@ api = swagger.docs(Api(app), apiVersion='0.1', api_spec_url='/spec', description
 mongo = PyMongo(app)
 redis = FlaskRedis(app)
 
+
 app.config['SENTRY_CONFIG'] = {
     'ignore_exceptions': ['werkzeug.exceptions.HTTPException', 'IOError']
 }
@@ -38,7 +39,7 @@ api.add_resource(UserAPI, '/user/<string:user_id>')
 api.add_resource(RequestDonationListAPI, '/donations')
 api.add_resource(RequestDonationAPI, '/donations/<int:donation_id>')
 api.add_resource(DonationAccomplishment, '/achievement/<int:donation_id>')
-api.add_resource(DonationHistory, '/donatiion/history')
+api.add_resource(DonationHistory, '/donation/history')
 
 
 @app.errorhandler(BaseExceptions)
