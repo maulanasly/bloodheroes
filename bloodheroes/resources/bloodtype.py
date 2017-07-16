@@ -1,11 +1,11 @@
 from flask import Resource, reqparse,marshal_with
 from flask_restful_swagger import swagger
 from bloodheroes import mongo
-from bloodheroes.schemes import RequestBlood
+from bloodheroes.schemes import BloodTypes,BloodTypeList
 
 blood_types_parser = reqparse.RequestParser()
 blood_types_parser.add_argument('blood_name',type=str)
-blood_types_parser.add_argument('resus',type=int)
+blood_types_parser.add_argument('rexus',type=int)
 
 class BloodTypesAPI(Resource):
     """docstring for BloodTypeAPI"""
@@ -30,17 +30,17 @@ class BloodTypesAPI(Resource):
                 raise BloodNotFound(blood_id=blood_id)
             args = blood_types_parser.parse_args()
             blood_name = args['blood_name']
-            resus = args['resus']
+            rexus = args['rexus']
 
             prepared_data={
                 'blood_name': blood_name,
-                'resus':resus
+                'rexus':rexus
             }
 
             if blood_name is None:
                 prepared_data.pop('blood_name')
-            if resus is None:
-                prepared_data.pop('resus')
+            if rexus is None:
+                prepared_data.pop('rexus')
             mongo.db.users.update({'blood_id': blood_id}, {'$set': prepared_data})
             return 'no content', 204
 
@@ -63,9 +63,13 @@ class BloodTypesListAPI(Resource):
 
         )
 
-
+        @marshal_with(BloodTypeList.resource_fields)
+        @required_auth
         def get(self):
-            pass
+            args = blood_types_parser.parse_args()
+            blood_cursor = mongo.db.blood_types.find_one({'blood_id':blood_id})
+            return {'blood_types': blood_cursor}
 
+        @marshal_with(BloodTypeList.resource_fields)
         def post(self):
             pass

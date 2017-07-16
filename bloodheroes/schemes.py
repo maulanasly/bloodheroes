@@ -127,3 +127,28 @@ class BloodTypeList(object):
     }
 
     required = ['blood_types']
+
+@swagger.model
+class UserLevels(object):
+    """docstring for BloodType"""
+
+    resource_fields = {
+        'level_name': fields.String(),
+        'user_id': fields.Integer(),
+        'score':fields.Integet()
+    }
+
+    required = ['level_name', 'user_id']
+
+@swagger.model
+@swagger.nested(
+    user_levels=UserLevels.__name__)
+class UserLevelsList(object):
+    """docstring for ClassName"""
+
+    resource_fields = {
+        "user_levels": fields.List(fields.Nested(UserLevels.resource_fields)),
+        "count": fields.Integer()
+    }
+
+    required = ['user_levels']
