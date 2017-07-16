@@ -123,8 +123,8 @@ class CategoryNotFound(BaseExceptions):
     extra_fields = []
 
 
-class MallNotFound(BaseExceptions):
-    message = "Mall not found"
+class UserLevelsNotFound(BaseExceptions):
+    message = "User Level not found"
     code = 162
     status_code = 404
     extra_fields = []
