@@ -360,10 +360,12 @@ class UserListAPI(Resource):
         filters = {}
         if longitude and latitude:
             filters["location"] = {
-                "$geoWithin": {
-                    "$center": [
-                        [longitude, latitude], distance
-                    ]
+                "$near": {
+                    "$geometry": {
+                        'type': 'Point',
+                        'coordinates': [longitude, latitude]
+                    },
+                    '$maxDistance': distance
                 }
             }
         if blood_id:
