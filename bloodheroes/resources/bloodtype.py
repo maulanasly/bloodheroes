@@ -3,32 +3,58 @@ from flask_restful_swagger import swagger
 from bloodheroes import mongo
 from bloodheroes.schemes import RequestBlood
 
-req_donations_parser = reqparse.RequestParser()
-req_donations_parser.add_argument('blood_name',type=str)
-req_donations_parser.add_argument('resus')
+blood_types_parser = reqparse.RequestParser()
+blood_types_parser.add_argument('blood_name',type=str)
+blood_types_parser.add_argument('resus',type=int)
 
-class BloodTypeAPI(Resource):
+class BloodTypesAPI(Resource):
     """docstring for BloodTypeAPI"""
 
         decorators = [required_auth]
 
+        @marshal_with(BloodTypes.resource_fields)
         def get(self, blood_id=None):
-            pass
+            if  blood_id == 'self':
+                blood_id == current_user['blood_id']
+            blood_type = mongo.db.users.find_one({'blood_id': blood_id})
+            if blood_type is None:
+                raise BloodNotFound(blood_id=blood_id)
+            return blood_type
 
+        @marshal_with(BloodTypes.resource_fields)
         def put(self, blood_id=None):
-            pass
+            if  blood_id == 'self':
+                blood_id == current_user['blood_id']
+            blood_type = mongo.db.users.find_one({'blood_id': blood_id})
+            if blood_type is None:
+                raise BloodNotFound(blood_id=blood_id)
+            args = blood_types_parser.parse_args()
+            blood_name = args['blood_name']
+            resus = args['resus']
+
+            prepared_data={
+                'blood_name': blood_name,
+                'resus':resus
+            }
+
+            if blood_name is None:
+                prepared_data.pop('blood_name')
+            if resus is None:
+                prepared_data.pop('resus')
+            mongo.db.users.update({'blood_id': blood_id}, {'$set': prepared_data})
+            return 'no content', 204
 
         @marshal_with(BloodTypes.resource_fields)
         def delete(self, blood_id=None):
             if blood_id == 'self':
                 blood_id = current_user['blood_id']
-            user = mongo.db.users.find_one({'blood_id': blood_id})
-            if user is None:
-                raise UserNotFound
+            blood_type = mongo.db.users.find_one({'blood_id': blood_id})
+            if blood_type is None:
+                raise BloodNotFound
             mongo.db.users.remove({'blood_id': blood_id})
             return 'no content', 204
 
-class BloodTypeListAPI(Resource):
+class BloodTypesListAPI(Resource):
     """docstring for BloodTypeListAPI"""
 
         #decorators = [required_auth]
@@ -38,8 +64,8 @@ class BloodTypeListAPI(Resource):
         )
 
 
-        def get(self, user_id=None):
+        def get(self):
             pass
 
-        def post(self, user_id=None):
+        def post(self):
             pass
