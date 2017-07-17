@@ -179,6 +179,13 @@ class EmailConflict(BaseExceptions):
     extra_fields = ['email']
 
 
+class RequisiteAlreadySatisfied(BaseExceptions):
+    message = "Number of donation has already satisfied"
+    code = 190
+    status_code = 406
+    extra_fields = ['requisite_number']
+
+
 class InternalError(BaseExceptions):
     message = "Unknown error"
     code = 700
