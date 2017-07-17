@@ -14,12 +14,110 @@ class User_LevelsAPI(Resource):
     """docstring for User_LevelsAPI"""
     decorators = [required_auth]
 
+    @swagger.operation(
+        notes="""Get user level""",
+        parameters=[
+            {
+                "name": "X-SESSION-ID",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "X-APP-TOKEN",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            }
+        ],
+        responseClass=UserLevels.__name__,
+        responseMessages=[
+            {
+                "code": 200,
+                "message": "OK"
+            },
+            FieldRequired.to_swagger(),
+        ]
+    )
+
     @marshal_with(UserLevels.resource_fields)
     def get(self, level_id=None):
         user_level = mongo.db.user_levels.find_one({'level_id': level_id})
         if user_level is None:
             raise UserLevelsNotFound(level_id=level_id)
         return user_level
+
+    @swagger.operation(
+        notes="""Update user level by id""",
+        parameters=[
+            {
+                "name": "X-SESSION-ID",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "X-APP-TOKEN",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "level-name",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": UserLevels.__name__,
+                "paramType": "body"
+            }
+        ],
+        responseClass=BloodTypes.__name__,
+        responseMessages=[
+            {
+                "code": 200,
+                "message": "OK"
+            },
+            UserLevelsNotFound.to_swagger()
+        ]
+    )
+
+    @swagger.operation(
+        notes="""Delete blood type by id""",
+        parameters=[
+            {
+                "name": "X-SESSION-ID",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "X-APP-TOKEN",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            }
+        ],
+        responseClass=UserLevels.__name__,
+        responseMessages=[
+            {
+                "code": 200,
+                "message": "OK"
+            },
+            FieldRequired.to_swagger(),
+        ]
+    )
 
     @marshal_with(UserLevels.resource_fields)
     def put(self, level_id=None):
@@ -57,11 +155,88 @@ class User_LevelsListAPI(Resource):
     """docstring for User_LevelsListAPI"""
     decorators = [required_auth]
 
+    @swagger.operation(
+        notes="""Blood type list posting method""",
+        parameters=[
+            {
+                "name": "blood-type",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": BloodTypeList.__name__,
+                "paramType": "body"
+            },
+            {
+                "name": "X-APP-TOKEN",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "X-SESSION-ID",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            }
+        ],
+        responseClass=UserLevelsList.__name__,
+        responseMessages=[
+            {
+                "code": 200,
+                "message": "OK"
+            },
+            InvalidFileType.to_swagger()
+        ]
+    )
+
     @marshal_with(UserLevelsList.resource_fields)
     def get(self):
         args = user_levels_parser.parse_args()
         user_levels_cursor = mongo.db.user_levels.find({})
         return {'user_levels': user_levels_cursor},200
+
+
+    @swagger.operation(
+        notes="""User level list posting method""",
+        parameters=[
+            {
+                "name": "user-level",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": UserLevelsList.__name__,
+                "paramType": "body"
+            },
+            {
+                "name": "X-APP-TOKEN",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            },
+            {
+                "name": "X-SESSION-ID",
+                "description": "",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": "string",
+                "paramType": "header"
+            }
+        ],
+        responseClass=UserLevelsList.__name__,
+        responseMessages=[
+            {
+                "code": 200,
+                "message": "OK"
+            },
+            InvalidFileType.to_swagger()
+        ]
+    )
 
     @marshal_with(UserLevelsList.resource_fields)
     def post(self):

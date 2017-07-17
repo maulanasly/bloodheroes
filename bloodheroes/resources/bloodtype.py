@@ -72,7 +72,7 @@ class BloodTypesAPI(Resource):
                 "paramType": "header"
             },
             {
-                "name": "blood-type",
+                "name": "blood-name",
                 "description": "",
                 "required": True,
                 "allowMultiple": False,
