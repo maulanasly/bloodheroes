@@ -17,6 +17,7 @@ get_donations_parser = reqparse.RequestParser()
 get_donations_parser.add_argument('user_id', type=int)
 get_donations_parser.add_argument('blood_type', type=str)
 get_donations_parser.add_argument('status', type=int)
+get_donations_parser.add_argument('giver', type=int, default=0)
 
 
 class RequestDonationAPI(Resource):
@@ -192,6 +193,14 @@ class RequestDonationListAPI(Resource):
                 "dataType": "int",
                 "paramType": "query"
             },
+            {
+                "name": "giver",
+                "description": "",
+                "required": False,
+                "allowMultiple": False,
+                "dataType": "int",
+                "paramType": "query"
+            },
         ],
         responseClass=RequestDonationsList.__name__,
         responseMessages=[
@@ -209,13 +218,17 @@ class RequestDonationListAPI(Resource):
         user_id = args['user_id']
         blood_type = args['blood_type']
         status = args['status']
+        giver = args['giver']
         if user_id is None:
             user_id = current_user['user_id']
         blood = mongo.db.blood_types.find_one({'blood_name': blood_type})
         blood_id = None if blood is None else blood['blood_id']
         filters = {}
         if user_id:
-            filters['user_id'] = user_id
+            if giver == 0:
+                filters['user_id'] = user_id
+            else:
+                filters['target_id'] = user_id
         if blood_id:
             filters['blood_id'] = blood_id
         if status:
@@ -226,7 +239,7 @@ class RequestDonationListAPI(Resource):
         for row in donation_cursor:
             blood = mongo.db.blood_types.find_one({'blood_name': int(row['blood_id'])})
             blood_name = None if blood is None else blood['blood_name']
-            user = mongo.db.users.find_one({'user_id': row['target_id']})
+            user = mongo.db.users.find_one({'user_id': row['target_id'] if giver == 0 else row['user_id']})
             requisite_number = row['requisite_number']
             donation = {
                 'donation_id': row['request_id'],
