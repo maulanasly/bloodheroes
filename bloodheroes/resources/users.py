@@ -86,7 +86,7 @@ class UserAPI(Resource):
             InvalidEmailFormat.to_swagger()
         ]
     )
-    @marshal_with(CrateUser.resource_fields)
+    @marshal_with(User.resource_fields)
     def get(self, user_id=None):
         'get user by id'
         if user_id == 'self':
@@ -96,6 +96,8 @@ class UserAPI(Resource):
             raise UserNotFound(user_id=user_id)
         blood = mongo.db.blood_types.find_one({'blood_id': None if user['blood_id'] is None else int(user['blood_id'])})
         user['blood_type'] = None if blood is None else blood['blood_name']
+        user_level = mongo.db.user_level.find_one({'level_id': user['level_id']})
+        user['level'] = user_level['level']
         user['longitude'] = user['location']['coordinates'][0]
         user['latitude'] = user['location']['coordinates'][1]
         return user
