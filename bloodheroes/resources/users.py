@@ -387,6 +387,8 @@ class UserListAPI(Resource):
             user['blood_type'] = None if blood is None else blood['blood_name']
             user['longitude'] = user['location']['coordinates'][0]
             user['latitude'] = user['location']['coordinates'][1]
+            user_level = mongo.db.user_level.find_one({'level_id': user['level_id']})
+            user['level'] = user_level['level']
             user_view.append(user)
         return {'users': user_view, 'count': user_cursor.count()}, 200
 
