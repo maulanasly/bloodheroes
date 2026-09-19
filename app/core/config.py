@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     default_page_size: int = Field(default=10, gt=0)
     max_page_size: int = Field(default=100, gt=0)
 
+    cors_origins: str = Field(default="")
+
     @model_validator(mode="after")
     def _validate(self) -> "Settings":
         if self.environment == "production" and self.jwt_secret == "change-me":
@@ -42,6 +44,11 @@ class Settings(BaseSettings):
         if self.db_pool_max < self.db_pool_min:
             raise ValueError("BH_DB_POOL_MAX must be >= BH_DB_POOL_MIN")
         return self
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Parse comma-separated BH_CORS_ORIGINS into explicit origins."""
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     @property
     def sync_database_url(self) -> str:
