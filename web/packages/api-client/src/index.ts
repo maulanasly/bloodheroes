@@ -5,7 +5,9 @@ import type {
   DonationRequestOut,
   GeoCell,
   GeoDisk,
+  LevelOut,
   OfferOut,
+  StatsOverview,
   UserCreate,
   UserList,
   UserOut,
@@ -112,6 +114,14 @@ export async function donationHistory(
   return client.request<DonationRequestList>(
     `/v1/donations/history${toQuery(params as Record<string, string | number | boolean | undefined>)}`,
   );
+}
+
+export async function getStatsOverview(client: ApiClient): Promise<StatsOverview> {
+  return client.request<StatsOverview>("/v1/stats/overview");
+}
+
+export async function listLevels(client: ApiClient): Promise<LevelOut[]> {
+  return client.request<LevelOut[]>("/v1/stats/levels");
 }
 
 export async function getGeoCell(

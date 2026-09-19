@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import auth, donations, geo, users
+from app.api.routers import auth, donations, geo, stats, users
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.db.postgres import close_pool, init_pool
@@ -42,6 +42,7 @@ def create_app() -> FastAPI:
     app.include_router(users.router, prefix="/v1")
     app.include_router(donations.router, prefix="/v1")
     app.include_router(geo.router, prefix="/v1")
+    app.include_router(stats.router, prefix="/v1")
 
     @app.get("/health", tags=["meta"])
     async def health() -> dict[str, str]:

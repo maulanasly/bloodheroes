@@ -1,18 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import { Alert, Button, Card, Field, Input, Page } from "@bloodheroes/ui";
 import { useAuth } from "@bloodheroes/ui";
 
-export default function LoginPage() {
-  const { login, user, ready, logout } = useAuth();
+function LoginForm() {
+  const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const expired = searchParams.get("expired") === "1";
+  const next = searchParams.get("next") || "/";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +24,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.push("/");
+      router.push(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -31,35 +35,53 @@ export default function LoginPage() {
   return (
     <Page title="Dashboard login">
       <Card title="Operator sign in">
-        {!ready ? (
-          <p>Loading…</p>
-        ) : user ? (
-          <div>
-            <p>
-              Signed in as <strong>{user.email}</strong>.
-            </p>
-            <p>
-              <a href="/">Open the operations map</a>
-            </p>
-            <Button variant="secondary" onClick={() => void logout()}>
-              Sign out
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit}>
-            <Field label="Email">
-              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </Field>
-            <Field label="Password">
-              <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-            </Field>
-            <Alert message={error} />
-            <Button type="submit" disabled={busy}>
-              {busy ? "Signing in…" : "Sign in"}
-            </Button>
-          </form>
+        {expired && (
+          <p
+            role="status"
+            style={{
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              color: "#b45309",
+              borderRadius: "0.5rem",
+              padding: "0.6rem 0.8rem",
+            }}
+          >
+            Your session expired — please sign in again.
+          </p>
         )}
+        <form onSubmit={onSubmit}>
+          <Field label="Email">
+            <Input
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          <Field label="Password">
+            <Input
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+          <Alert message={error} />
+          <Button type="submit" loading={busy}>
+            Sign in
+          </Button>
+        </form>
       </Card>
     </Page>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 90_000,
   retries: 0,
+  // Serial: specs share one database, so parallel workers cause flakes.
+  workers: 1,
   use: {
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

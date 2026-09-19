@@ -1,53 +1,88 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
 
-const controlStyle: CSSProperties = {
+import { colors, font, radius, spacing, toneColors } from "./theme";
+
+const controlStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.55rem 0.7rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "0.5rem",
-  fontSize: "0.95rem",
+  border: `1px solid ${colors.ink[300]}`,
+  borderRadius: radius.md,
+  fontSize: font.size.md,
+  background: colors.white,
+  color: colors.ink[900],
 };
 
 export function Button({
   children,
   variant = "primary",
+  loading = false,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost" }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "danger" | "ghost";
+  loading?: boolean;
+}) {
   const background =
     variant === "primary"
-      ? "#b91c1c"
+      ? colors.brand[700]
       : variant === "danger"
-        ? "#7f1d1d"
+        ? colors.brand[900]
         : variant === "secondary"
-          ? "#334155"
+          ? colors.ink[700]
           : "transparent";
-  const color = variant === "ghost" ? "#b91c1c" : "#fff";
+  const color = variant === "ghost" ? colors.brand[700] : colors.white;
+  const disabled = props.disabled || loading;
   return (
     <button
       {...props}
+      disabled={disabled}
+      aria-busy={loading || undefined}
       style={{
         background,
         color,
-        border: variant === "ghost" ? "1px solid #b91c1c" : "none",
-        borderRadius: "0.5rem",
+        border: variant === "ghost" ? `1px solid ${colors.brand[700]}` : "none",
+        borderRadius: radius.md,
         padding: "0.55rem 1rem",
         fontWeight: 600,
-        cursor: props.disabled ? "not-allowed" : "pointer",
-        opacity: props.disabled ? 0.6 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
       }}
     >
-      {children}
+      {loading ? "Working…" : children}
     </button>
   );
 }
 
-export function Field({ label, children }: { label: string; children: ReactNode }) {
+export function Field({
+  label,
+  children,
+  error,
+  hint,
+}: {
+  label: string;
+  children: ReactNode;
+  error?: string | null;
+  hint?: string | null;
+}) {
   return (
-    <label style={{ display: "block", marginBottom: "0.75rem", fontSize: "0.9rem" }}>
-      <span style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>{label}</span>
+    <label style={{ display: "block", marginBottom: spacing.md, fontSize: font.size.sm }}>
+      <span style={{ display: "block", marginBottom: spacing.xs, fontWeight: 600 }}>{label}</span>
       {children}
+      {hint && !error && (
+        <span style={{ display: "block", marginTop: spacing.xs, color: colors.ink[500], fontSize: font.size.xs }}>
+          {hint}
+        </span>
+      )}
+      {error && (
+        <span
+          role="alert"
+          style={{ display: "block", marginTop: spacing.xs, color: colors.danger.text, fontSize: font.size.xs }}
+        >
+          {error}
+        </span>
+      )}
     </label>
   );
 }
@@ -68,16 +103,25 @@ export function Card({ title, children, action }: { title?: string; children: Re
   return (
     <section
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "0.75rem",
-        padding: "1rem",
-        background: "#fff",
-        marginBottom: "1rem",
+        border: `1px solid ${colors.ink[200]}`,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
+        background: colors.white,
+        marginBottom: spacing.lg,
       }}
     >
       {title && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-          <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{title}</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: spacing.sm,
+            marginBottom: spacing.md,
+            flexWrap: "wrap",
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: font.size.lg }}>{title}</h2>
           {action}
         </div>
       )}
@@ -86,24 +130,18 @@ export function Card({ title, children, action }: { title?: string; children: Re
   );
 }
 
-export function Badge({ children, tone = "gray" }: { children: ReactNode; tone?: "gray" | "red" | "green" | "amber" | "blue" }) {
-  const tones: Record<string, string> = {
-    gray: "#64748b",
-    red: "#b91c1c",
-    green: "#15803d",
-    amber: "#b45309",
-    blue: "#1d4ed8",
-  };
+export function Badge({ children, tone = "gray" }: { children: ReactNode; tone?: keyof typeof toneColors }) {
+  const color = toneColors[tone];
   return (
     <span
       style={{
         display: "inline-block",
-        background: `${tones[tone]}1a`,
-        color: tones[tone],
-        border: `1px solid ${tones[tone]}55`,
-        borderRadius: "999px",
+        background: `${color}1a`,
+        color,
+        border: `1px solid ${color}55`,
+        borderRadius: radius.pill,
         padding: "0.1rem 0.6rem",
-        fontSize: "0.8rem",
+        fontSize: font.size.xs,
         fontWeight: 600,
       }}
     >
@@ -118,10 +156,10 @@ export function Alert({ message }: { message: string | null }) {
     <p
       role="alert"
       style={{
-        background: "#fef2f2",
-        border: "1px solid #fecaca",
-        color: "#991b1b",
-        borderRadius: "0.5rem",
+        background: colors.danger.bg,
+        border: `1px solid ${colors.danger.border}`,
+        color: colors.danger.text,
+        borderRadius: radius.md,
         padding: "0.6rem 0.8rem",
       }}
     >
@@ -130,52 +168,126 @@ export function Alert({ message }: { message: string | null }) {
   );
 }
 
-export function EmptyState({ message }: { message: string }) {
-  return <p style={{ color: "#64748b" }}>{message}</p>;
+export function EmptyState({ message, action }: { message: string; action?: ReactNode }) {
+  return (
+    <div style={{ color: colors.ink[500], padding: `${spacing.md} 0` }}>
+      <p style={{ margin: `0 0 ${action ? spacing.sm : 0}` }}>{message}</p>
+      {action}
+    </div>
+  );
 }
 
-export function Page({ title, children }: { title: string; children: ReactNode }) {
+export function Page({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
   return (
-    <main style={{ maxWidth: "72rem", margin: "0 auto", padding: "1.25rem" }}>
-      <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>{title}</h1>
+    <main id="main" style={{ maxWidth: "72rem", margin: "0 auto", padding: spacing.xl }}>
+      <a href="#main" className="sr-only">
+        Skip to content
+      </a>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: spacing.sm,
+          flexWrap: "wrap",
+          marginBottom: spacing.lg,
+        }}
+      >
+        <h1 style={{ fontSize: font.size.xl, margin: 0 }}>{title}</h1>
+        {actions}
+      </div>
       {children}
     </main>
   );
 }
 
-export function Nav({ brand, links, onLogout, email }: {
+export function Nav({
+  brand,
+  links,
+  onLogout,
+  email,
+}: {
   brand: string;
   links: { href: string; label: string }[];
   onLogout: () => void;
   email: string | null;
 }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   return (
     <header
       style={{
-        background: "#7f1d1d",
-        color: "#fff",
+        background: colors.brand[900],
+        color: colors.white,
         padding: "0.7rem 1.25rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "1rem",
-        flexWrap: "wrap",
       }}
     >
-      <strong>{brand}</strong>
-      <nav style={{ display: "flex", gap: "0.9rem", flex: 1 }}>
-        {links.map((l) => (
-          <a key={l.href} href={l.href} style={{ color: "#fff", textDecoration: "none" }}>
-            {l.label}
-          </a>
-        ))}
-      </nav>
-      {email && <span style={{ fontSize: "0.85rem" }}>{email}</span>}
-      <button
-        onClick={onLogout}
-        style={{ background: "transparent", border: "1px solid #fff", color: "#fff", borderRadius: "0.4rem", padding: "0.3rem 0.7rem", cursor: "pointer" }}
-      >
-        Logout
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+        <strong>{brand}</strong>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            display: "none",
+            background: "transparent",
+            border: `1px solid ${colors.white}`,
+            color: colors.white,
+            borderRadius: radius.sm,
+            padding: "0.3rem 0.6rem",
+            cursor: "pointer",
+          }}
+          className="bh-nav-toggle"
+        >
+          ☰
+        </button>
+        <nav
+          aria-label="Primary"
+          style={{ display: "flex", gap: "0.9rem", flex: 1, flexWrap: "wrap" }}
+          className={open ? "bh-nav-open" : "bh-nav-links"}
+        >
+          {links.map((l) => {
+            const active = pathname === l.href;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                style={{
+                  color: colors.white,
+                  textDecoration: active ? "underline" : "none",
+                  textUnderlineOffset: "0.25rem",
+                  fontWeight: active ? 700 : 400,
+                }}
+              >
+                {l.label}
+              </a>
+            );
+          })}
+        </nav>
+        {email && <span style={{ fontSize: font.size.xs }}>{email}</span>}
+        <button
+          onClick={onLogout}
+          style={{
+            background: "transparent",
+            border: `1px solid ${colors.white}`,
+            color: colors.white,
+            borderRadius: radius.sm,
+            padding: "0.3rem 0.7rem",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .bh-nav-toggle { display: inline-block !important; }
+          .bh-nav-links { display: none !important; }
+          .bh-nav-open { display: flex !important; flex-direction: column; width: 100%; }
+        }
+      `}</style>
     </header>
   );
 }

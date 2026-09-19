@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ApiClient, MemoryTokenStore } from "./client.js";
-import type { TokenPair } from "./types.js";
+import { ApiClient, MemoryTokenStore } from "./client";
+import type { TokenPair } from "./types";
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
