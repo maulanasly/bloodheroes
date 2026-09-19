@@ -11,6 +11,7 @@ export interface MapMarker {
   longitude: number;
   title: string;
   color?: string;
+  href?: string;
 }
 
 const TILE_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
@@ -19,7 +20,7 @@ function markersCollection(markers: MapMarker[]): {
   type: "FeatureCollection";
   features: {
     type: "Feature";
-    properties: { title: string; color: string };
+    properties: { title: string; color: string; href?: string };
     geometry: { type: "Point"; coordinates: [number, number] };
   }[];
 } {
@@ -27,13 +28,17 @@ function markersCollection(markers: MapMarker[]): {
     type: "FeatureCollection",
     features: markers.map((marker) => ({
       type: "Feature" as const,
-      properties: { title: marker.title, color: marker.color ?? "#7f1d1d" },
+      properties: { title: marker.title, color: marker.color ?? "#7f1d1d", href: marker.href },
       geometry: {
         type: "Point" as const,
         coordinates: [marker.longitude, marker.latitude] as [number, number],
       },
     })),
   };
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 /**
@@ -49,6 +54,7 @@ export function H3Map({
   markers = [],
   onPick,
   height = 420,
+  focusKey,
 }: {
   center: { latitude: number; longitude: number };
   zoom?: number;
@@ -57,6 +63,8 @@ export function H3Map({
   markers?: MapMarker[];
   onPick?: (latitude: number, longitude: number) => void;
   height?: number;
+  /** Bump to fly the viewport to `center` (e.g. after a search). */
+  focusKey?: number | string;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
@@ -114,6 +122,26 @@ export function H3Map({
           },
         });
         map.on("click", (e) => pickRef.current?.(e.lngLat.lat, e.lngLat.lng));
+        map.on("click", "marker-circles", (e) => {
+          const feature = e.features?.[0];
+          const props = feature?.properties as { title?: string; href?: string } | undefined;
+          const geometry = feature?.geometry as { coordinates?: [number, number] } | undefined;
+          if (!geometry?.coordinates) return;
+          const title = escapeHtml(props?.title ?? "Details");
+          const link = props?.href
+            ? `<br><a href="${escapeHtml(props.href)}">Open details →</a>`
+            : "";
+          new maplibre.Popup({ closeButton: true })
+            .setLngLat(geometry.coordinates)
+            .setHTML(`<strong>${title}</strong>${link}`)
+            .addTo(map);
+        });
+        map.on("mouseenter", "marker-circles", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", "marker-circles", () => {
+          map.getCanvas().style.cursor = "";
+        });
         setLoaded(true);
       });
     }
@@ -126,6 +154,13 @@ export function H3Map({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || focusKey === undefined) return;
+    map.flyTo({ center: [center.longitude, center.latitude], zoom: Math.max(map.getZoom(), zoom) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusKey, loaded]);
 
   useEffect(() => {
     const map = mapRef.current;

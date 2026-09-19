@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import {
   ApiClient,
@@ -37,6 +38,7 @@ interface AuthContextValue {
   client: ApiClient;
   user: UserOut | null;
   ready: boolean;
+  sessionExpired: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -55,17 +57,31 @@ export function AuthProvider({
   storageKey: string;
   children: ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const pathRef = useRef(pathname);
+  pathRef.current = pathname;
+  const [user, setUser] = useState<UserOut | null>(null);
+  const [ready, setReady] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const sessionExpiredRef = useRef(false);
+  const markExpired = useCallback(() => {
+    if (sessionExpiredRef.current) return;
+    sessionExpiredRef.current = true;
+    setSessionExpired(true);
+    const next = encodeURIComponent(pathRef.current);
+    router.replace(`/login?expired=1&next=${next}`);
+  }, [router]);
   const client = useMemo(
     () =>
       new ApiClient({
         baseUrl,
         appToken,
         store: typeof window === "undefined" ? undefined : new LocalStorageTokenStore(storageKey),
+        onAuthFailure: () => markExpired(),
       }),
-    [baseUrl, appToken, storageKey],
+    [baseUrl, appToken, storageKey, markExpired],
   );
-  const [user, setUser] = useState<UserOut | null>(null);
-  const [ready, setReady] = useState(false);
 
   const refreshUser = useCallback(async () => {
     if (!client.isAuthenticated()) {
@@ -85,6 +101,8 @@ export function AuthProvider({
 
   const login = useCallback(
     async (email: string, password: string) => {
+      sessionExpiredRef.current = false;
+      setSessionExpired(false);
       await client.login(email, password);
       await refreshUser();
     },
@@ -94,11 +112,13 @@ export function AuthProvider({
   const logout = useCallback(async () => {
     await client.logout();
     setUser(null);
+    sessionExpiredRef.current = false;
+    setSessionExpired(false);
   }, [client]);
 
   const value = useMemo(
-    () => ({ client, user, ready, login, logout, refreshUser }),
-    [client, user, ready, login, logout, refreshUser],
+    () => ({ client, user, ready, sessionExpired, login, logout, refreshUser }),
+    [client, user, ready, sessionExpired, login, logout, refreshUser],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
