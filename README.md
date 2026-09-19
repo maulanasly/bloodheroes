@@ -44,6 +44,7 @@ The quickest path uses the `Makefile`:
 make install-dev     # create .venv and install project + dev deps
 make db-up           # start PostgreSQL/PostGIS via docker compose
 make migrate         # apply SQL migrations
+make seed-dev        # seed a dev operator (ops@example.com / password123)
 make run             # granian dev server with autoreload on :8000
 ```
 
@@ -62,6 +63,7 @@ Migrations run automatically on container start. Common `make` targets:
 | `make run` / `make serve` | Granian dev (reload) / production server |
 | `make test` | Ephemeral PostGIS DB + migrations + pytest |
 | `make migrate` / `make migrate-rollback` | yoyo apply / rollback |
+| `make seed-dev` | Seed a dev operator for local login (refuses production) |
 | `make lint` / `make format` / `make typecheck` | ruff / ruff format / mypy |
 | `make db-up` / `make db-down` | dev database |
 | `make docker-up` / `make docker-down` / `make logs` | compose stack |

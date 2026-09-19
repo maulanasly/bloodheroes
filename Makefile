@@ -20,7 +20,7 @@ TEST_DATABASE_URL ?= postgresql://bloodheroes:bloodheroes@localhost:55432/bloodh
 POSTGIS_IMAGE     ?= postgis/postgis:16-3.4
 
 .PHONY: help venv install install-dev run serve lint format typecheck \
-        test test-local test-db-up test-db-down migrate migrate-rollback \
+        test test-local test-db-up test-db-down migrate migrate-rollback seed-dev \
         db-up db-down docker-build docker-up docker-down logs clean \
         web-install web-typecheck web-test web-build web-dev-dashboard web-dev-client web-e2e
 
@@ -57,6 +57,9 @@ migrate: ## Apply SQL migrations to the configured database
 
 migrate-rollback: ## Roll back the latest migration
 	$(YOYO) rollback --batch --database "$(DATABASE_URL)" migrations
+
+seed-dev: ## Seed a dev operator account (SEED_OPERATOR_EMAIL/PASSWORD)
+	$(PYTHON) scripts/seed_dev_operator.py
 
 db-up: ## Start the development database (docker compose)
 	docker compose up -d db

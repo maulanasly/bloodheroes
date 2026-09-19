@@ -1,28 +1,28 @@
 # Graph Report - bloodheroes  (2026-09-19)
 
 ## Corpus Check
-- 98 files · ~20,788 words
+- 100 files · ~21,260 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 8 file(s) not represented in the graph (top: (none) 6, .example 1, .ini 1)
 
 ## Summary
-- 798 nodes · 1731 edges · 44 communities (26 shown, 18 thin omitted)
+- 814 nodes · 1780 edges · 44 communities (26 shown, 18 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 31 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `16a25928`
+- Built from commit: `a36ac495`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- exceptions.py
+- security.py
 - routers/donations.py
 - routers/users.py
 - api-client/src/index.ts
-- services/donations.py
+- exceptions.py
 - migrate_from_mongo.py
-- main.py
+- config.py
 - register
 - client/package.json
 - AGENTS.md
@@ -32,7 +32,7 @@
 - 0001_initial.sql
 - dashboard/package.json
 - ui/package.json
-- TokenPair
+- .request
 - web/package.json
 - api-client/package.json
 - geo/package.json
@@ -63,11 +63,11 @@
 ## Surprising Connections (you probably didn't know these)
 - `Guardrails and conventions` --references--> `AppError`  [INFERRED]
   AGENTS.md → app/core/exceptions.py
+- `test_expired_token_rejected()` --uses--> `SessionExpired`  [INFERRED]
+  tests/test_security.py → app/core/exceptions.py
 - `test_invalid_token_rejected()` --uses--> `UnAuthorized`  [INFERRED]
   tests/test_security.py → app/core/exceptions.py
 - `test_token_type_enforced()` --uses--> `UnAuthorized`  [INFERRED]
-  tests/test_security.py → app/core/exceptions.py
-- `test_expired_token_rejected()` --uses--> `SessionExpired`  [INFERRED]
   tests/test_security.py → app/core/exceptions.py
 - `test_cell_is_deterministic_and_int()` --calls--> `cell_for()`  [EXTRACTED]
   tests/test_geo.py → app/core/geo.py
@@ -77,9 +77,9 @@
 
 ## Communities (44 total, 18 thin omitted)
 
-### Community 0 - "exceptions.py"
-Cohesion: 0.06
-Nodes (66): get_current_user_id(), Connection, require_app_token(), login(), logout(), Connection, post, Response (+58 more)
+### Community 0 - "security.py"
+Cohesion: 0.07
+Nodes (62): get_current_user_id(), Connection, require_app_token(), login(), logout(), Connection, post, Response (+54 more)
 
 ### Community 1 - "routers/donations.py"
 Cohesion: 0.10
@@ -87,27 +87,27 @@ Nodes (33): _cells_for(), create_offer(), create_request(), get_request(), histo
 
 ### Community 2 - "routers/users.py"
 Cohesion: 0.08
-Nodes (50): delete_me(), get_me(), get_user(), list_users(), alias, Connection, ge, get (+42 more)
+Nodes (49): delete_me(), get_me(), get_user(), list_users(), alias, Connection, ge, get (+41 more)
 
 ### Community 3 - "api-client/src/index.ts"
-Cohesion: 0.05
-Nodes (98): maplibre-gl, ref_next, ref_react, proxy, HistoryPage(), metadata, LoginPage(), ProfilePage() (+90 more)
+Cohesion: 0.06
+Nodes (93): maplibre-gl, ref_next, ref_react, proxy, HistoryPage(), metadata, LoginPage(), ProfilePage() (+85 more)
 
-### Community 4 - "services/donations.py"
-Cohesion: 0.19
-Nodes (28): AccessDenied, DonationNotFound, InvalidInput, RequisiteAlreadySatisfied, app_repositories, count_accomplished_for_donor(), create_offer(), create_request() (+20 more)
+### Community 4 - "exceptions.py"
+Cohesion: 0.12
+Nodes (39): AccessDenied, AppError, DonationNotFound, FieldRequired, InternalError, InvalidCredentials, InvalidEmailFormat, InvalidInput (+31 more)
 
 ### Community 5 - "migrate_from_mongo.py"
 Cohesion: 0.10
-Nodes (39): get_cell(), get_disk(), ge, get, gt, le, Query, cell_for() (+31 more)
+Nodes (37): get_cell(), get_disk(), ge, get, gt, le, Query, cell_for() (+29 more)
 
-### Community 6 - "main.py"
-Cohesion: 0.08
-Nodes (28): app_api_routers, get_settings(), Parse comma-separated BH_CORS_ORIGINS into explicit origins., psycopg-compatible URL for migrations (yoyo)., Settings, FastAPI, register_exception_handlers(), app_db (+20 more)
+### Community 6 - "config.py"
+Cohesion: 0.09
+Nodes (25): app_api_routers, get_settings(), Parse comma-separated BH_CORS_ORIGINS into explicit origins., psycopg-compatible URL for migrations (yoyo)., Settings, FastAPI, register_exception_handlers(), close_pool() (+17 more)
 
 ### Community 7 - "register"
-Cohesion: 0.21
-Nodes (29): httpx, _create_request(), AsyncClient, test_cannot_offer_to_own_request(), test_donor_cannot_accept_own_offer(), test_request_offer_accept_accomplish_flow(), test_request_radius_filter(), AsyncClient (+21 more)
+Cohesion: 0.13
+Nodes (42): app_db, CompletedProcess, httpx, os, pathlib, pytest_asyncio, subprocess, _create_request() (+34 more)
 
 ### Community 8 - "client/package.json"
 Cohesion: 0.06
@@ -137,9 +137,9 @@ Nodes (33): dependencies, @bloodheroes/api-client, @bloodheroes/geo, @bloodheroe
 Cohesion: 0.06
 Nodes (31): dependencies, @bloodheroes/api-client, @bloodheroes/geo, maplibre-gl, next, react, react-dom, devDependencies (+23 more)
 
-### Community 27 - "TokenPair"
-Cohesion: 0.11
-Nodes (12): ref_vitest, ApiClient, ApiClientOptions, MemoryTokenStore, RequestOptions, TOKENS_A, TOKENS_B, TokenStore (+4 more)
+### Community 27 - ".request"
+Cohesion: 0.09
+Nodes (17): RegisterPage(), onSubmit(), ApiClient, MemoryTokenStore, RequestOptions, TOKENS_A, TOKENS_B, TokenStore (+9 more)
 
 ### Community 28 - "web/package.json"
 Cohesion: 0.09
@@ -158,8 +158,8 @@ Cohesion: 0.11
 Nodes (17): compilerOptions, allowSyntheticDefaultImports, declaration, declarationMap, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules, jsx (+9 more)
 
 ### Community 32 - "geo/src/index.ts"
-Cohesion: 0.35
-Nodes (11): cellsToFeatureCollection(), FeatureCollection, GeoCellLike, haversineM(), LatLng, octagonForCell(), octagonFromCenter(), polygonFeature (+3 more)
+Cohesion: 0.34
+Nodes (11): ref_vitest, cellsToFeatureCollection(), GeoCellLike, haversineM(), LatLng, octagonForCell(), octagonFromCenter(), polygonFeature (+3 more)
 
 ### Community 33 - "compilerOptions"
 Cohesion: 0.15
@@ -183,23 +183,23 @@ Nodes (7): compilerOptions, composite, outDir, rootDir, extends, include, ../../
 
 ## Knowledge Gaps
 - **239 isolated node(s):** `app_tokens`, `bloodheroes`, `proxy`, `metadata`, `EMPTY_COLLECTION` (+234 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 332 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 334 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppError` connect `exceptions.py` to `AGENTS.md`, `routers/users.py`, `services/donations.py`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Why does `AppError` connect `exceptions.py` to `security.py`, `AGENTS.md`, `routers/users.py`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
 - **Why does `maplibre-gl` connect `api-client/src/index.ts` to `ui/package.json`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **Why does `Guardrails and conventions` connect `AGENTS.md` to `exceptions.py`?**
   _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `app_tokens`, `bloodheroes`, `proxy` to the rest of the system?**
   _239 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `exceptions.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.06185919343814081 - nodes in this community are weakly interconnected._
+- **Should `security.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.0650103519668737 - nodes in this community are weakly interconnected._
 - **Should `routers/donations.py` be split into smaller, more focused modules?**
   _Cohesion score 0.10256410256410256 - nodes in this community are weakly interconnected._
 - **Should `routers/users.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08311688311688312 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08484848484848485 - nodes in this community are weakly interconnected._
