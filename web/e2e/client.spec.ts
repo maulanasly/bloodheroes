@@ -1,9 +1,24 @@
 import { expect, test } from "@playwright/test";
 
-const CLIENT_URL = process.env.E2E_CLIENT_URL ?? "http://127.0.0.1:3002";
+import { CLIENT_URL, registerUser } from "./helpers";
 
 const stamp = Date.now();
 const EMAIL = `e2e-${stamp}@example.com`;
+const AUTO_EMAIL = `e2e-auto-${stamp}@example.com`;
+
+test.beforeAll(async () => {
+  await registerUser(AUTO_EMAIL, { firstname: "Auto", blood_type: "O+" });
+});
+
+test("discovery auto-searches on load", async ({ page }) => {
+  await page.goto(`${CLIENT_URL}/login`);
+  await page.getByLabel("Email").fill(AUTO_EMAIL);
+  await page.getByLabel("Password").fill("password123");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByText("Find help near you")).toBeVisible({ timeout: 15_000 });
+  // No manual search: the page searches from the profile location by itself.
+  await expect(page.getByText(/H3 cells as octagon overlays/)).toBeVisible({ timeout: 20_000 });
+});
 
 test("donor registers, discovers, and publishes a request", async ({ page }) => {
   await page.goto(`${CLIENT_URL}/register`);
