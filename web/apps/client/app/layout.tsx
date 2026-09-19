@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./globals.css";
 
-import { AuthProvider } from "@bloodheroes/ui";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Bloodheroes",
@@ -12,10 +13,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#fff7f7" }}>
-        <AuthProvider baseUrl="/api/backend" appToken="" storageKey="bh-client-tokens">
-          {children}
-        </AuthProvider>
+      <body>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
