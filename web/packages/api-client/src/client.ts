@@ -20,6 +20,8 @@ export interface ApiClientOptions {
   appToken: string;
   store?: TokenStore;
   fetchImpl?: typeof fetch;
+  /** Called after tokens are cleared because a refresh failed. */
+  onAuthFailure?: () => void;
 }
 
 interface RequestOptions {
@@ -34,6 +36,7 @@ export class ApiClient {
   private appToken: string;
   private store: TokenStore;
   private fetchImpl: typeof fetch;
+  private onAuthFailure: (() => void) | undefined;
   private refreshPromise: Promise<TokenPair> | null = null;
 
   constructor(options: ApiClientOptions) {
@@ -41,6 +44,7 @@ export class ApiClient {
     this.appToken = options.appToken;
     this.store = options.store ?? new MemoryTokenStore();
     this.fetchImpl = options.fetchImpl ?? fetch.bind(globalThis);
+    this.onAuthFailure = options.onAuthFailure;
   }
 
   get tokens(): TokenPair | null {
@@ -119,6 +123,7 @@ export class ApiClient {
           await this.refresh();
         } catch {
           this.store.save(null);
+          this.onAuthFailure?.();
           throw new ApiError(response.status, data as ApiErrorBody | null, "Unauthorized");
         }
         return this.request<T>(path, { ...options, retry: false });

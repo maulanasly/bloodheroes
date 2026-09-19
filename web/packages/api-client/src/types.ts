@@ -145,3 +145,21 @@ export const REQUEST_STATUS: Record<number, string> = {
   1: "fulfilled",
   2: "cancelled",
 };
+
+export interface BloodTypeCount {
+  blood_type: string;
+  donors: number;
+}
+
+export interface LevelOut {
+  level_id: number;
+  name: string;
+  min_score: number;
+}
+
+export interface StatsOverview {
+  open_requests: number;
+  pending_offers: number;
+  accomplished_offers: number;
+  donors_by_blood_type: BloodTypeCount[];
+}
