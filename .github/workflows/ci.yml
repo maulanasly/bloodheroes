@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint, typecheck, test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: bloodheroes
+          POSTGRES_PASSWORD: bloodheroes
+          POSTGRES_DB: bloodheroes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bloodheroes"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      BH_DATABASE_URL: postgresql://bloodheroes:bloodheroes@localhost:5432/bloodheroes
+      BH_ENVIRONMENT: testing
+      BH_JWT_SECRET: ci-secret-0123456789abcdef0123456789abcdef
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Wait for PostGIS
+        run: |
+          python - <<'PY'
+          import asyncio
+          import os
+
+          import asyncpg
+
+          url = os.environ["BH_DATABASE_URL"]
+
+
+          async def main() -> None:
+              ok = 0
+              for _ in range(120):
+                  try:
+                      conn = await asyncpg.connect(url)
+                      await conn.execute("select 1")
+                      await conn.close()
+                      ok += 1
+                      if ok >= 4:
+                          print("database ready")
+                          return
+                  except Exception:
+                      ok = 0
+                  await asyncio.sleep(1)
+              raise SystemExit("database not ready after 120s")
+
+
+          asyncio.run(main())
+          PY
+
+      - name: Apply migrations
+        run: yoyo apply --batch --database "$BH_DATABASE_URL" migrations
+
+      - name: Lint
+        run: ruff check app tests migrations scripts
+
+      - name: Type check
+        run: mypy app scripts
+
+      - name: Test
+        run: pytest -q
