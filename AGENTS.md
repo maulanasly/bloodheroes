@@ -155,3 +155,6 @@ required checks pass. Do not merge with red or skipped required checks.
 | `make migrate` / `make migrate-rollback` | Apply / roll back SQL migrations |
 | `make db-up` / `make db-down` | Dev database |
 | `make docker-up` / `make docker-down` / `make logs` | Compose stack |
+| `make web-install` / `make web-typecheck` / `make web-test` / `make web-build` | Web workspace install / tsc / vitest / next build |
+| `make web-dev-dashboard` / `make web-dev-client` | Next.js dev servers (:3001 / :3002) |
+| `make web-e2e` | Ephemeral API+DB+apps, then Playwright |
