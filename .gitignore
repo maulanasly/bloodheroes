@@ -99,3 +99,20 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Ruff / project
+.ruff_cache/
+*.sqlite3
+pgdata/
+
+# graphify context memory: commit graph.json + GRAPH_REPORT.md, ignore the rest
+graphify-out/.graphify_*
+graphify-out/*/
+graphify-out/manifest.json
+graphify-out/cost.json
+graphify-out/graph.html
+graphify-out/obsidian/
+graphify-out/*.svg
+graphify-out/*.graphml
+graphify-out/cypher.txt
+graphify-out/merged-graph.json
