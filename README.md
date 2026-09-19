@@ -44,6 +44,7 @@ The quickest path uses the `Makefile`:
 make install-dev     # create .venv and install project + dev deps
 make db-up           # start PostgreSQL/PostGIS via docker compose
 make migrate         # apply SQL migrations
+make seed-dev        # seed a dev operator (ops@example.com / password123)
 make run             # granian dev server with autoreload on :8000
 ```
 
@@ -62,6 +63,7 @@ Migrations run automatically on container start. Common `make` targets:
 | `make run` / `make serve` | Granian dev (reload) / production server |
 | `make test` | Ephemeral PostGIS DB + migrations + pytest |
 | `make migrate` / `make migrate-rollback` | yoyo apply / rollback |
+| `make seed-dev` | Seed a dev operator for local login (refuses production) |
 | `make lint` / `make format` / `make typecheck` | ruff / ruff format / mypy |
 | `make db-up` / `make db-down` | dev database |
 | `make docker-up` / `make docker-down` / `make logs` | compose stack |
@@ -128,3 +130,44 @@ Defaults live in config: `BH_H3_RESOLUTION=8`, `BH_DEFAULT_SEARCH_RADIUS_M=1000`
 
 `scripts/migrate_from_mongo.py` backfills existing Mongo data into Postgres and
 re-hashes legacy passwords to Argon2id on next login. See the script header.
+
+## Web apps (dashboard + client)
+
+Next.js (TypeScript) monorepo under `web/`:
+
+```
+web/
+  apps/dashboard/      # operations: map-first H3 search, requests, donors
+  apps/client/         # donors/requesters: nearby discovery, requests, offers, history
+  packages/api-client/ # typed API client (app token + JWT refresh)
+  packages/ui/         # shared components, auth, map, backend proxy
+  packages/geo/        # H3/octagon geometry helpers (unit-tested)
+  e2e/                 # Playwright specs for both apps
+```
+
+Key design points:
+
+- **H3 stays hexagonal** for indexing and search. The dashboard draws an
+  **octagon overlay** (presentation only) derived from the authoritative backend
+  cell geometry; an audit toggle shows the true H3 hexagon outlines.
+- Browsers never see `X-APP-TOKEN`: both apps proxy API calls through
+  same-origin `/api/backend/*` routes that inject the token server-side
+  (`BH_APP_TOKEN`). JWT access/refresh continues to rotate per user.
+- `GET /v1/geo/cell` and `GET /v1/geo/disk` return the authoritative cell ID,
+  resolution, center, and boundary polygons so the UI never drifts from the backend.
+- The default app token (`dev-app-token-change-me`, seeded by
+  `migrations/0003_seed_app_token.sql`) must be rotated in production via
+  `BH_APP_TOKEN`.
+
+```bash
+make web-install       # npm install the web workspace
+make web-dev-dashboard # dashboard on :3001 (BH_API_BASE_URL/BH_APP_TOKEN env)
+make web-dev-client    # client on :3002
+make web-typecheck     # tsc across workspaces
+make web-test          # vitest unit tests
+make web-build         # next build both apps
+make web-e2e           # ephemeral API+DB+apps, then Playwright
+```
+
+Or run the full stack with Docker: `docker compose up --build`
+(API :8000, dashboard :3001, client :3002).

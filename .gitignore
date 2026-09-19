@@ -116,3 +116,11 @@ graphify-out/*.svg
 graphify-out/*.graphml
 graphify-out/cypher.txt
 graphify-out/merged-graph.json
+
+# web
+node_modules/
+.next/
+out/
+web/test-results/
+web/playwright-report/
+*.tsbuildinfo

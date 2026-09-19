@@ -88,3 +88,160 @@ jobs:
 
       - name: Test
         run: pytest -q
+
+  web:
+    name: web typecheck, unit, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck --workspaces --if-present
+
+      - name: Unit tests
+        run: npm run test --workspaces --if-present
+
+      - name: Build dashboard
+        run: npm run build --workspace @bloodheroes/dashboard
+
+      - name: Build client
+        run: npm run build --workspace @bloodheroes/client
+
+  e2e:
+    name: end-to-end (playwright)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: bloodheroes
+          POSTGRES_PASSWORD: bloodheroes
+          POSTGRES_DB: bloodheroes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bloodheroes"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      BH_DATABASE_URL: postgresql://bloodheroes:bloodheroes@localhost:5432/bloodheroes
+      BH_ENVIRONMENT: testing
+      BH_JWT_SECRET: ci-secret-0123456789abcdef0123456789abcdef
+      BH_APP_TOKEN: dev-app-token-change-me
+      BH_API_BASE_URL: http://127.0.0.1:8000
+      E2E_API_URL: http://127.0.0.1:8000
+      E2E_DASH_URL: http://127.0.0.1:3001
+      E2E_CLIENT_URL: http://127.0.0.1:3002
+      E2E_APP_TOKEN: dev-app-token-change-me
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install API dependencies
+        run: pip install -e .
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Playwright browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for PostGIS
+        run: |
+          python - <<'PY'
+          import asyncio
+          import os
+
+          import asyncpg
+
+          url = os.environ["BH_DATABASE_URL"]
+
+
+          async def main() -> None:
+              ok = 0
+              for _ in range(120):
+                  try:
+                      conn = await asyncpg.connect(url)
+                      await conn.execute("select 1")
+                      await conn.close()
+                      ok += 1
+                      if ok >= 4:
+                          print("database ready")
+                          return
+                  except Exception:
+                      ok = 0
+                  await asyncio.sleep(1)
+              raise SystemExit("database not ready after 120s")
+
+
+          asyncio.run(main())
+          PY
+
+      - name: Apply migrations
+        run: yoyo apply --batch --database "$BH_DATABASE_URL" migrations
+
+      - name: Start API
+        run: |
+          granian --interface asgi --host 127.0.0.1 --port 8000 app.main:app > /tmp/api.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8000/health
+
+      - name: Build web apps
+        working-directory: web
+        run: |
+          npm run build --workspace @bloodheroes/dashboard
+          npm run build --workspace @bloodheroes/client
+
+      - name: Start web apps
+        working-directory: web
+        run: |
+          (npm run start --workspace @bloodheroes/dashboard > /tmp/dashboard.log 2>&1 &)
+          (npm run start --workspace @bloodheroes/client > /tmp/client.log 2>&1 &)
+          for _ in $(seq 1 90); do
+            curl -fsS http://127.0.0.1:3001/login >/dev/null 2>&1 \
+              && curl -fsS http://127.0.0.1:3002/login >/dev/null 2>&1 && break
+            sleep 1
+          done
+
+      - name: Run Playwright
+        working-directory: web
+        run: npx playwright test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: web/test-results
+          retention-days: 7

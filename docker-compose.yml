@@ -21,6 +21,7 @@ services:
       BH_DATABASE_URL: postgresql://bloodheroes:bloodheroes@db:5432/bloodheroes
       BH_ENVIRONMENT: ${BH_ENVIRONMENT:-development}
       BH_JWT_SECRET: ${BH_JWT_SECRET:-dev-secret-change-me-0123456789abcdef}
+      BH_CORS_ORIGINS: ${BH_CORS_ORIGINS:-http://localhost:3001,http://localhost:3002}
       GRANIAN_WORKERS: ${GRANIAN_WORKERS:-1}
       GRANIAN_LOG_LEVEL: ${GRANIAN_LOG_LEVEL:-info}
       GRANIAN_LOG_ACCESS_ENABLED: ${GRANIAN_LOG_ACCESS_ENABLED:-false}
@@ -32,6 +33,32 @@ services:
     command: >
       sh -c "yoyo apply --batch --database \"$$BH_DATABASE_URL\" migrations &&
              granian --interface asgi --host 0.0.0.0 --port 8000 app.main:app"
+
+  dashboard:
+    build:
+      context: ./web
+      dockerfile: ./apps/dashboard/Dockerfile
+    environment:
+      BH_API_BASE_URL: http://api:8000
+      BH_APP_TOKEN: ${BH_APP_TOKEN:-dev-app-token-change-me}
+      PORT: 3001
+    depends_on:
+      - api
+    ports:
+      - "3001:3001"
+
+  client:
+    build:
+      context: ./web
+      dockerfile: ./apps/client/Dockerfile
+    environment:
+      BH_API_BASE_URL: http://api:8000
+      BH_APP_TOKEN: ${BH_APP_TOKEN:-dev-app-token-change-me}
+      PORT: 3002
+    depends_on:
+      - api
+    ports:
+      - "3002:3002"
 
 volumes:
   pgdata:
